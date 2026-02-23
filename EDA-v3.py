@@ -64,21 +64,9 @@ if high_missing_cols:
     print(f"Dropping columns with >50% missing values: {high_missing_cols}")
     df.drop(columns=high_missing_cols, inplace=True)
 
-# 步骤2: 处理目标变量缺失 - 删除对应行
-if target_col in df.columns:
-    target_missing = df[target_col].isnull().sum()
-    if target_missing > 0:
-        print(f"Dropping {target_missing} rows with missing target variable.")
-        df.dropna(subset=[target_col], inplace=True)
 
-# 步骤3: 处理日期列缺失（如果有） - 删除对应行
-if 'startdate' in df.columns:
-    date_missing = df['startdate'].isnull().sum()
-    if date_missing > 0:
-        print(f"Dropping {date_missing} rows with missing startdate.")
-        df.dropna(subset=['startdate'], inplace=True)
 
-# 步骤4: 对数值特征进行中位数填充，并添加缺失指示列
+# 对数值特征进行中位数填充，并添加缺失指示列
 numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 # 排除目标变量（已处理）和可能的非预测列（但保留所有数值列）
 if target_col in numeric_cols:
@@ -95,7 +83,7 @@ for col in numeric_cols:
         df[col + '_missing'] = missing_indicator
         print(f"  Filled {col} with median, added missing indicator.")
 
-# 步骤5: 对分类特征进行众数填充，并添加缺失指示列
+#  对分类特征进行众数填充，并添加缺失指示列
 categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
 # 排除日期列（已处理）
 if 'startdate' in categorical_cols:
@@ -110,7 +98,7 @@ for col in categorical_cols:
         df[col + '_missing'] = missing_indicator
         print(f"  Filled {col} with mode, added missing indicator.")
 
-# 步骤6: 检查剩余缺失值
+#  检查剩余缺失值
 missing_after = df.isnull().sum().sum()
 print(f"Total missing values after handling: {missing_after}")
 if missing_after > 0:
@@ -572,7 +560,7 @@ if outliers_info:
     outliers_df = pd.DataFrame(outliers_info).T
     print("Outliers analysis:")
     print(outliers_df)
-
+    
     # 可视化异常值
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
     axes = axes.flatten()
@@ -587,6 +575,43 @@ if outliers_info:
     plt.show()
 else:
     print("No significant outliers detected in key features")
+
+    # ========== 异常值处理（截尾） ==========
+print("\n" + "=" * 80)
+print("Outlier Handling (Winsorization)")
+print("=" * 80)
+
+
+# 定义需要处理的特征（可基于检测结果选择）
+features_to_cap = [f for f in key_features_for_outliers if f != target_col and f in df.columns]
+
+capped_count = 0
+for col in features_to_cap:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    if IQR > 0:
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+        # 统计处理前异常数
+        outliers_before = ((df[col] < lower) | (df[col] > upper)).sum()
+        if outliers_before > 0:
+            # 截尾
+            df[col] = df[col].clip(lower, upper)
+            capped_count += 1
+            # 可选：添加异常指示列（取消下一行注释以启用）
+            # df[col + '_outlier'] = ((df[col] < lower) | (df[col] > upper)).astype(int)
+            print(f"  {col}: capped {outliers_before} outliers to [{lower:.2f}, {upper:.2f}]")
+    else:
+        print(f"  {col}: IQR=0, skipping")
+
+if capped_count == 0:
+    print("No features required capping.")
+else:
+    print(f"Capping applied to {capped_count} features.")
+
+
+
 
 # 14. 数据质量总结
 print("\n" + "=" * 80)
