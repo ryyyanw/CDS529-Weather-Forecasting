@@ -52,14 +52,11 @@ All models were evaluated using RMSE and R² on a time‑based validation split 
 ├── README.md
 
 ## How to Run
-1. Install required packages:
-   ```bash
-   pip install numpy pandas matplotlib seaborn scipy scikit-learn xgboost lightgbm optuna shap
-2. Download the competition data and update the paths in the notebooks (e.g., ./train_data.csv).
+1. Open Google Colab and run four notebook files.
 
-3. Start with EDA.ipynb to understand the data and generate preliminary visualizations.
+2. Start with EDA.ipynb to understand the data and generate preliminary visualizations.
 
-4. Execute the modeling notebooks to reproduce the results. All steps are fully documented.
+3. Execute the modeling notebooks to reproduce the results. All steps are fully documented.
 
 Acknowledgements
 Data source: WiDS Datathon 2023
