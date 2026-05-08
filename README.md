@@ -42,9 +42,13 @@ All models were evaluated using RMSE and R² on a time‑based validation split 
 
 ## Repository Structure
 ├── EDA.ipynb # Exploratory data analysis
+
 ├── LinearRegression.ipynb # Linear regression, Ridge, Lasso
+
 ├── RandomForest.ipynb # Random Forest model & feature importance
+
 ├── XGBoost.ipynb # XGBoost + LightGBM ensemble, SHAP, Optuna tuning
+
 ├── README.md
 
 ## How to Run
